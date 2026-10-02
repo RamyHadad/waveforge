@@ -125,6 +125,38 @@ workspace/
 
 After editing live routing or dependencies, update the corresponding task documents and run the validator. Changes to splitting rules do not rewrite tasks; generate a new workspace and review the differences. Preserve existing claims and evidence when migrating an active plan.
 
+### Edit the model YAML
+
+The model configuration is generated with each workspace and can be edited as the project changes. `configuration/model_catalog.yaml` lists model IDs **available in your environment** and their supported effort levels. In the included example it starts as:
+
+```yaml
+version: 1
+models:
+  gpt-6-sol:
+    role: implementation and contract review
+    supported_efforts: [medium, high]
+```
+
+To change a planned route, edit `configuration/model_policy.yaml`. For example, assigning the example's final task a higher effort changes its entry to:
+
+```yaml
+tasks:
+  T-003:
+    model: gpt-6-sol
+    effort: high
+    escalation_eligible: false
+```
+
+Keep the rest of `model_policy.yaml`, including its `version`, `escalation`, and other task entries. Then update the matching line in `plans/02_storage/waves/wave-2/tasks/T-003.md`:
+
+```text
+Starting model: `gpt-6-sol` · Effort: `high`.
+```
+
+Run `python scripts/validate_plan_workspace.py <workspace>` to confirm the route uses a cataloged model and supported effort and matches the task document. If you add a model, enter its real callable ID and supported efforts in the catalog first. The original `manifest.yaml` remains a record of the initial route.
+
+These YAML files are a **planning policy**, not an automatic model selector. A coordinator or worker reads the current route when assigning work. Changing YAML alone does not launch a model, move an active chat to another model, or record an ownership claim. See the generated `configuration/OWNERSHIP_PROTOCOL.md` for claim and escalation rules.
+
 ## Configuration and format
 
 - [Manifest format and output contract](references/manifest-format.md)
