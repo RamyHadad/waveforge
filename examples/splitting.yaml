@@ -1,0 +1,9 @@
+version: 1
+mode: configured
+required_workstreams: [foundation, storage]
+max_workstreams: 2
+max_waves_per_workstream: 2
+max_tasks_per_wave: 1
+rules:
+  - Keep the note contract and storage behavior in separate workstreams.
+  - Complete the note codec before implementing storage.

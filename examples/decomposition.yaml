@@ -1,0 +1,76 @@
+version: 1
+project:
+  id: local-notes
+  title: Local notes planning example
+  assumptions:
+    - Use src/notes for the Python library and tests for focused fixtures.
+  open_decisions: []
+# Example routes, not a universal model catalog. Replace for your environment.
+models:
+  gpt-6-sol:
+    role: implementation and contract review
+    supported_efforts: [medium, high]
+plans:
+  - id: foundation
+    title: Note format
+    goal: Define the note contract and version failure behavior.
+    source_refs: ["Requirements", "Decisions"]
+    validation: ["Valid notes round-trip through the codec; unsupported versions fail."]
+    evidence: ["Reviewed format definition and focused codec test output."]
+    waves:
+      - id: wave-1
+        title: Establish the contract
+        tasks:
+          - id: T-001
+            title: Define the versioned note codec
+            description: Implement JSON encoding and decoding for ID, title, body, and format version.
+            source_refs: ["Requirements: note format", "Requirements: unsupported versions"]
+            dependencies: []
+            acceptance:
+              - Encoding and decoding preserve ID, title, and body.
+              - Unsupported format versions produce a clear error.
+            validation: ["Run codec round-trip and unsupported-version tests."]
+            evidence: ["Codec diff and test output."]
+            file_scope: ["src/notes/codec.py", "tests/test_codec.py"]
+            model: gpt-6-sol
+            effort: medium
+            escalation_eligible: false
+  - id: storage
+    title: Local storage
+    goal: Save and reopen notes in a user-selected directory.
+    source_refs: ["Requirements", "Validation"]
+    validation: ["A saved note reopens unchanged from a temporary directory."]
+    evidence: ["Storage implementation and passing integration fixture."]
+    waves:
+      - id: wave-1
+        title: Persist a note
+        tasks:
+          - id: T-002
+            title: Save notes as UTF-8 JSON
+            description: Use the note codec to save a note in the supplied local directory.
+            source_refs: ["Requirements: save a note"]
+            dependencies: [T-001]
+            acceptance: ["The saved file contains UTF-8 JSON preserving the note fields."]
+            validation: ["Save a note with non-ASCII text in a temporary directory and inspect its contents."]
+            evidence: ["Save implementation diff and fixture output."]
+            file_scope: ["src/notes/storage.py", "tests/test_storage.py"]
+            model: gpt-6-sol
+            effort: medium
+            escalation_eligible: false
+      - id: wave-2
+        title: Complete the round trip
+        tasks:
+          - id: T-003
+            title: Reopen and validate saved notes
+            description: Load saved notes through the codec and verify the full storage round trip.
+            source_refs: ["Requirements: reopen a note", "Validation"]
+            dependencies: [T-001, T-002]
+            acceptance:
+              - Reopened ID, title, and body match the original note.
+              - Unsupported versions are rejected when reopening.
+            validation: ["Run storage round-trip and unsupported-version integration tests."]
+            evidence: ["Load implementation diff and integration test output."]
+            file_scope: ["src/notes/storage.py", "tests/test_storage.py"]
+            model: gpt-6-sol
+            effort: medium
+            escalation_eligible: false
