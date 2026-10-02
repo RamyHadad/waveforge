@@ -29,12 +29,18 @@ publish changes.
    Include acceptance criteria, validation steps, expected evidence, and
    source references for every task. Label inferred work and unresolved
    decisions explicitly. Preserve safety, permission, and publication gates.
-3. Select each task's lowest plausible model and effort from models **actually
-   available** in the target environment. Put exact IDs and capabilities in
-   the editable model catalog. If availability is unknown, ask for the catalog
-   before completing executable routes; never invent a callable model or claim
-   a cost estimate without evidence. Reserve stronger models for evidenced
-   escalation.
+3. Determine model routing mode from the user's input. If the user supplies a
+   model and effort for a task, preserve that manual choice. If the user
+   supplies only a model catalog or delegates routing, select a suitable model
+   and effort separately for each unassigned task, preferring the lowest
+   plausible route for its requirements. A project may mix manual and planned
+   routes. Use models **actually available** in the target environment and put
+   their exact IDs and supported efforts in the editable model catalog. Check
+   every route against that catalog; flag an unavailable or unsupported manual
+   choice rather than silently replacing it. If availability is unknown, ask
+   for the catalog before completing executable routes. Never invent a callable
+   model or claim a cost estimate without evidence. Reserve stronger routes
+   for tasks that justify them or for evidenced escalation.
 4. Author a YAML decomposition manifest following
    [the manifest and output contract](references/manifest-format.md). Run
    `scripts/build_plan_workspace.py` with the source plan, manifest, optional

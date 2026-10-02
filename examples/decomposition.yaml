@@ -75,5 +75,5 @@ plans:
             evidence: ["Load implementation diff and integration test output."]
             file_scope: ["src/notes/storage.py", "tests/test_storage.py"]
             model: gpt-6-sol
-            effort: medium
+            effort: high
             escalation_eligible: false

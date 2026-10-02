@@ -52,6 +52,14 @@ preserved normalized source or a stable section/document identifier. Put
 newly inferred requirements in `assumptions` and explain why; unresolved
 choices go in `open_decisions`. Do not disguise them as source requirements.
 
+Each task's `model` and `effort` form its planned route. Different tasks may use
+different models and effort levels. Preserve user-specified routes; for tasks
+without a route, the planning agent selects from the models and supported
+efforts actually available in the target environment. The builder rejects
+unknown models and unsupported efforts. After generation, the live route is in
+`configuration/model_policy.yaml`, while this manifest retains the initial
+choice.
+
 The builder creates:
 
 ```text

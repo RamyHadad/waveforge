@@ -72,6 +72,31 @@ Create a new workspace at planning/release-2 and validate it.
 
 WaveForge reads the plan, authors a manifest, builds the workspace, and checks its structure. A model catalog must reflect the target environment: model routes are planned assignments, not claims that work has begun.
 
+### Choose who assigns models and effort
+
+You can set each task's route yourself, let the planning agent choose, or combine the two. A route has a **model ID** and an **effort level** (sometimes called intensity). The planning agent uses only the models and effort levels actually available in your environment. Manual choices take precedence; unavailable or unsupported choices must be surfaced for correction.
+
+To let the agent select routes per task, use a prompt such as:
+
+```text
+Use $waveforge to plan project-plan.md. Use models and supported efforts
+available in this environment. Select a suitable model and effort for each
+task based on its scope, risk, and validation needs. Explain stronger routes
+in the task plan. Build a new workspace at planning/release-1 and validate it.
+Do not implement the tasks.
+```
+
+To select routes manually, provide the exact assignments when you request the plan:
+
+```text
+Use $waveforge to plan examples/source-plan.md. Use models available here.
+Route the note-format task to gpt-6-luna at medium effort and the save-note
+task to gpt-6-sol at high effort. Choose routes for any other tasks.
+Build a new workspace at planning/release-1 and validate it.
+```
+
+Before task IDs exist, identify tasks by outcome or provide routing preferences. Once task IDs exist, you can name them directly. After generation, you can manually change routes in `configuration/model_policy.yaml` as shown below. The routes record plans for implementation; they do not start workers.
+
 ## Try the runnable example
 
 From a clone of this repository:
@@ -84,7 +109,7 @@ python scripts/validate_plan_workspace.py .demo-workspace
 
 The example models are available in the environment used to author this example. Before using its routes for real work, replace them with IDs and supported efforts available in your own environment. Running the example does not contact those models.
 
-The demo contains two workstreams and three tasks: define a note format with `gpt-6-luna`, then save and reopen notes with `gpt-6-sol`. These IDs were available when the example was written; check your own environment before using the routes. The builder requires a **new output directory**. Choose a different `--out` path for another run.
+The demo contains two workstreams and three tasks: define a note format with `gpt-6-luna` at medium effort, save a note with `gpt-6-sol` at medium effort, then reopen it with `gpt-6-sol` at high effort. The high route illustrates a manual intensity choice. These IDs were available when the example was written; check your own environment before using the routes. The builder requires a **new output directory**. Choose a different `--out` path for another run.
 
 ## Generated workspace
 
@@ -140,17 +165,17 @@ models:
     supported_efforts: [medium, high]
 ```
 
-To change a planned route, edit `configuration/model_policy.yaml`. For example, assigning the example's final task a higher effort changes its entry to:
+To change a planned route, edit `configuration/model_policy.yaml`. For example, manually increasing `T-002` from medium to high effort changes its entry to:
 
 ```yaml
 tasks:
-  T-003:
+  T-002:
     model: gpt-6-sol
     effort: high
     escalation_eligible: false
 ```
 
-Keep the rest of `model_policy.yaml`, including its `version`, `escalation`, and other task entries. Then update the matching line in `plans/02_storage/waves/wave-2/tasks/T-003.md`:
+Keep the rest of `model_policy.yaml`, including its `version`, `escalation`, and other task entries. Then update the matching line in `plans/02_storage/waves/wave-1/tasks/T-002.md`:
 
 ```text
 Starting model: `gpt-6-sol` · Effort: `high`.
@@ -162,7 +187,7 @@ These YAML files are a **planning policy**, not an automatic model selector. A c
 
 ### Implement a wave using its model routes
 
-After generating a workspace, use a separate implementation request. For the example, the `foundation` workstream's first wave contains `T-001` routed to `gpt-6-luna`. The `storage` workstream's first wave contains `T-002` routed to `gpt-6-sol` and depends on `T-001`. You can give a coordinator this prompt from the project repository:
+After generating a workspace, use a separate implementation request. For the example, the `foundation` workstream's first wave contains `T-001` routed to `gpt-6-luna` at medium effort. The `storage` workstream's first wave contains `T-002` routed to `gpt-6-sol` at medium effort and depends on `T-001`; its second wave routes `T-003` to `gpt-6-sol` at high effort. You can give a coordinator this prompt from the project repository:
 
 ```text
 Implement the first wave in each workstream of .demo-workspace, in dependency
