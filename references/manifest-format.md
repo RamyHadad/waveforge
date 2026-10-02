@@ -108,6 +108,9 @@ corresponding task file and validate. Never regenerate over active claims.
 
 The validator checks structure, unique IDs, known dependencies, cycles,
 initial same-plan wave order, model IDs and supported efforts, task file presence,
-and consistency between live configuration and task files. It cannot judge
+and consistency between live configuration and task files. It also enforces
+dependency completion for ready/in-progress/done states, actual worker claims,
+event chronology, and completion evidence as described in
+[task states, ownership, and evidence](ownership-and-evidence.md). It cannot judge
 whether the decomposition faithfully implements the source; the skill must
 review that separately.

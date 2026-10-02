@@ -14,7 +14,7 @@ The skill guides the decomposition; the Python scripts build and validate the wo
 - An editable model catalog and per-task model/effort policy.
 - Spreadsheet-readable task and ownership records, initially unsigned.
 - Optional splitting rules for workstream boundaries and size limits.
-- Structural validation of dependencies, routing, preserved source, and live configuration.
+- Deterministic validation of dependencies, task states, worker claims, chronology, evidence files, routing, and preserved source.
 
 ```mermaid
 flowchart LR
@@ -220,6 +220,7 @@ Replace `.demo-workspace` with your generated workspace path. The coordinator ne
 
 - [Manifest format and output contract](references/manifest-format.md)
 - [Splitting configuration](references/splitting-configuration.md)
+- [Task states, ownership, and evidence](references/ownership-and-evidence.md)
 - [Complete skill instructions](SKILL.md)
 - [Example source plan](examples/source-plan.md)
 - [Example decomposition](examples/decomposition.yaml)
@@ -230,11 +231,11 @@ Without a splitting file, the skill chooses coherent workstreams from the plan. 
 
 WaveForge prepares plans and coordination records. It does not execute tasks, launch agents, approve work, or publish changes. It targets broad coordinated projects rather than ordinary single-task coding.
 
-Validation checks structural consistency, including dependency cycles and model routes. It cannot prove that a decomposition faithfully covers the source plan; source review remains part of the skill workflow. The skill cannot switch the active chat model, and unknown model availability must be resolved before completing executable routes.
+Validation checks structural consistency, including dependency cycles and model routes. `READY`, `IN_PROGRESS`, and `DONE` require completed dependencies; in-progress tasks need matching worker claims, and done tasks need valid completion records and evidence. Ledger event chronology and local evidence files are checked. Free-text evidence and external links remain supported, but the validator cannot prove acceptance outcomes or source-plan coverage; those need review. The skill cannot switch the active chat model, and unknown model availability must be resolved before completing executable routes.
 
 ## Development
 
-Run the existing smoke tests:
+Run the complete test suite:
 
 ```bash
 python -m unittest discover -s scripts -p "test_*.py" -v
@@ -244,9 +245,9 @@ GitHub Actions runs those tests and builds and validates the example on Python 3
 
 Contributions should describe the concrete problem, preserve the skill's planning boundary, and include relevant validation. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
-## Publish this repository
+## Releases
 
-See [PUBLISHING.md](PUBLISHING.md) for the first upload to `RamyHadad/waveforge`, suggested repository metadata, and release steps.
+See [CHANGELOG.md](CHANGELOG.md) for the `v0.1.0` capabilities and compatibility notes, and [RELEASING.md](RELEASING.md) for checks, tags, and GitHub release publication. Release versions are independent of YAML schema `version: 1`.
 
 ## License
 

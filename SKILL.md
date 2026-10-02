@@ -57,12 +57,21 @@ publish changes.
 
 The generated `configuration/` folder holds the editable splitting rules,
 manifest, model catalog, per-task model policy, task register, ownership protocol, and an
-unsigned CSV sign-off sheet. CSV is a spreadsheet-readable sheet. A model may
+unsigned CSV sign-off sheet. CSV is a spreadsheet-readable sheet. A worker may
 record a claim or completion only for work it actually performed; never
 pre-fill signatures, timestamps, test results, or commit IDs. One named worker
 owns a task at a time. The coordinator checks dependencies and overlapping
 file scopes, records the claim, and integrates results. An assigned model in
 the policy is a **planned route**, not a claim or permission to mutate source.
+
+The validator requires completed dependencies for `READY`, `IN_PROGRESS`, and
+`DONE`, matching active claims for in-progress tasks, and valid completion
+events with evidence for done tasks. Ledger events use nondecreasing UTC times;
+handoffs and blocks release the claim and completion closes the task.
+Recognizable local evidence files must exist, be non-empty, and remain inside
+the workspace. Notes and external links remain supported without content or
+network verification. See [task states, ownership, and evidence](references/ownership-and-evidence.md)
+when recording or validating execution state.
 
 Do not silently expand the source plan or turn a planning instruction into
 implementation. Keep this skill domain-neutral: project-specific constraints

@@ -1,3 +1,4 @@
 interface:
   display_name: "WaveForge"
-  short_description: "Forge plans into waves and model-owned tasks"
+  short_description: "Decompose plans into dependency waves and model-routed tasks"
+  default_prompt: "Use $waveforge to analyze the supplied project plan and produce a validated workspace with dependency-aware workstreams, tasks, and planned model routes."

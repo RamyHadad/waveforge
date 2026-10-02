@@ -120,6 +120,7 @@ class PlanWorkspaceTests(unittest.TestCase):
             register_rows[0]["Status"] = "DONE"
             register_rows[0]["Owner"] = ""
             register_rows[0]["Evidence"] = "tests.txt"
+            (output / "tests.txt").write_text("Focused fixture passed\n", encoding="utf-8")
             with register_path.open("w", newline="", encoding="utf-8-sig") as stream:
                 writer = csv.DictWriter(stream, fieldnames=REGISTER_FIELDS)
                 writer.writeheader()

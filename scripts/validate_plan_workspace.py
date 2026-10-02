@@ -1,12 +1,13 @@
-"""Check a generated planning workspace for structural and routing drift."""
+"""Check planning structure, live task states, ownership, and completion evidence."""
 
 from __future__ import annotations
 
 import argparse
 import csv
 import hashlib
+import re
 from datetime import datetime
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 
 import yaml
 
@@ -25,7 +26,59 @@ def _csv(path: Path, expected_fields: list[str]) -> list[dict]:
         reader = csv.DictReader(stream)
         if reader.fieldnames != expected_fields:
             raise ValueError(f"Unexpected columns in {path}: {reader.fieldnames}")
-        return list(reader)
+        rows = list(reader)
+        for line, row in enumerate(rows, 2):
+            if None in row or any(value is None for value in row.values()):
+                raise ValueError(f"Malformed CSV row at {path}:{line}; check the column count")
+        return rows
+
+
+def _evidence(root: Path, value: str, label: str) -> None:
+    """Check identifiable local files; retain legacy notes and external links."""
+    if not value.strip():
+        raise ValueError(f"{label} lacks evidence")
+    # A single URL can contain semicolons; it remains an opaque external reference.
+    entries = [value.strip()] if re.fullmatch(r"https?://\S+", value.strip()) else value.split(";")
+    seen: set[str] = set()
+    for entry in entries:
+        entry = entry.strip()
+        if not entry:
+            raise ValueError(f"{label} has an empty evidence entry")
+        reference = entry
+        link = re.fullmatch(r"\[[^\]]+\]\(([^)]+)\)", entry)
+        if link:
+            reference = link.group(1)
+        if reference.startswith(("http://", "https://")):
+            key = reference
+        elif reference.startswith("text:"):
+            if not reference[5:].strip():
+                raise ValueError(f"{label} has an empty evidence note")
+            key = reference
+        else:
+            explicit_file = reference.startswith("file:")
+            if explicit_file:
+                reference = reference[5:]
+            # Without a declared format, ordinary prose is still valid evidence.
+            is_path = explicit_file or link is not None or "/" in reference or "\\" in reference or (
+                not any(char.isspace() for char in reference) and bool(Path(reference).suffix)
+            )
+            if is_path:
+                portable = reference.replace("\\", "/")
+                if not portable or Path(portable).is_absolute() or PureWindowsPath(reference).drive:
+                    raise ValueError(f"{label} evidence path must be workspace-relative: {reference!r}")
+                target = (root / portable).resolve()
+                if not target.is_relative_to(root.resolve()):
+                    raise ValueError(f"{label} evidence path escapes the workspace: {reference!r}")
+                if not target.is_file():
+                    raise ValueError(f"{label} evidence file does not exist: {reference!r}")
+                if target.stat().st_size == 0:
+                    raise ValueError(f"{label} evidence file is empty: {reference!r}")
+                key = str(target)
+            else:
+                key = entry
+        if key in seen:
+            raise ValueError(f"{label} has duplicate evidence: {entry!r}")
+        seen.add(key)
 
 
 def validate(root: Path) -> tuple[int, int]:
@@ -115,9 +168,20 @@ def validate(root: Path) -> tuple[int, int]:
     for task_id in register:
         visit(task_id)
 
+    for task_id, row in register.items():
+        if row["Status"] in {"READY", "IN_PROGRESS", "DONE"}:
+            for dependency in filter(None, row["Dependencies"].split(";")):
+                dependency_status = register[dependency]["Status"]
+                if dependency_status != "DONE":
+                    raise ValueError(
+                        f"{task_id} is {row['Status']} but dependency {dependency} is not DONE "
+                        f"(current status: {dependency_status})."
+                    )
+
     signoffs = _csv(config / "ownership_signoff.csv", SIGNOFF_FIELDS)
-    active: dict[str, str] = {}
+    active: dict[str, dict] = {}
     completed: set[str] = set()
+    last_timestamp: dict[str, datetime] = {}
     for row in signoffs:
         task_id = row["Task ID"]
         event = row["Event"]
@@ -134,27 +198,38 @@ def validate(root: Path) -> tuple[int, int]:
             raise ValueError(f"Invalid sign-off timestamp for {task_id}") from error
         if timestamp.tzinfo is None or timestamp.utcoffset().total_seconds() != 0:
             raise ValueError(f"Sign-off timestamp must be UTC for {task_id}")
+        if task_id in last_timestamp and timestamp < last_timestamp[task_id]:
+            raise ValueError(f"Sign-off timestamp goes backwards for {task_id}")
+        last_timestamp[task_id] = timestamp
+        if task_id in completed:
+            if event == "COMPLETE":
+                raise ValueError(f"Duplicate completion sign-off for {task_id}")
+            raise ValueError(f"{event} references already completed task {task_id}")
         if event == "CLAIM":
             if task_id in active:
                 raise ValueError(f"Task already claimed: {task_id}")
-            active[task_id] = worker
+            active[task_id] = row
         else:
-            if active.get(task_id) != worker:
+            if task_id not in active or active[task_id]["Worker"] != worker:
                 raise ValueError(f"Sign-off event has no matching owner for {task_id}")
             del active[task_id]
             if event == "COMPLETE":
-                if not row["Evidence"].strip():
-                    raise ValueError(f"Completion lacks evidence for {task_id}")
+                _evidence(root, row["Evidence"], f"Completion for {task_id}")
                 completed.add(task_id)
     for task_id, row in register.items():
         status = row["Status"]
         if status == "IN_PROGRESS":
-            if active.get(task_id) != row["Owner"] or not row["Actual Model"]:
+            claim = active.get(task_id)
+            if claim is None or claim["Worker"] != row["Owner"] or not row["Actual Model"].strip():
                 raise ValueError(f"In-progress task lacks matching claim: {task_id}")
+            if claim["Actual Model"] != row["Actual Model"]:
+                raise ValueError(f"In-progress task actual model differs from its claim: {task_id}")
         elif task_id in active:
             raise ValueError(f"Active claim disagrees with register status for {task_id}")
-        if status == "DONE" and (task_id not in completed or not row["Evidence"].strip()):
-            raise ValueError(f"Done task lacks completion sign-off or evidence: {task_id}")
+        if status == "DONE":
+            if task_id not in completed:
+                raise ValueError(f"Done task lacks completion sign-off: {task_id}")
+            _evidence(root, row["Evidence"], f"Done task {task_id}")
     if not (config / "OWNERSHIP_PROTOCOL.md").is_file():
         raise ValueError("Missing ownership protocol")
     if not (root / "README.md").is_file():
