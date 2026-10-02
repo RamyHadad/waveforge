@@ -7,6 +7,9 @@ project:
   open_decisions: []
 # Example routes, not a universal model catalog. Replace for your environment.
 models:
+  gpt-6-luna:
+    role: focused implementation
+    supported_efforts: [medium]
   gpt-6-sol:
     role: implementation and contract review
     supported_efforts: [medium, high]
@@ -32,7 +35,7 @@ plans:
             validation: ["Run codec round-trip and unsupported-version tests."]
             evidence: ["Codec diff and test output."]
             file_scope: ["src/notes/codec.py", "tests/test_codec.py"]
-            model: gpt-6-sol
+            model: gpt-6-luna
             effort: medium
             escalation_eligible: false
   - id: storage

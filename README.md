@@ -84,7 +84,7 @@ python scripts/validate_plan_workspace.py .demo-workspace
 
 The example models are available in the environment used to author this example. Before using its routes for real work, replace them with IDs and supported efforts available in your own environment. Running the example does not contact those models.
 
-The demo contains two workstreams and three tasks: define a note format, implement saving a note, and implement reopening it. The builder requires a **new output directory**. Choose a different `--out` path for another run.
+The demo contains two workstreams and three tasks: define a note format with `gpt-6-luna`, then save and reopen notes with `gpt-6-sol`. These IDs were available when the example was written; check your own environment before using the routes. The builder requires a **new output directory**. Choose a different `--out` path for another run.
 
 ## Generated workspace
 
@@ -132,6 +132,9 @@ The model configuration is generated with each workspace and can be edited as th
 ```yaml
 version: 1
 models:
+  gpt-6-luna:
+    role: focused implementation
+    supported_efforts: [medium]
   gpt-6-sol:
     role: implementation and contract review
     supported_efforts: [medium, high]
@@ -156,6 +159,27 @@ Starting model: `gpt-6-sol` · Effort: `high`.
 Run `python scripts/validate_plan_workspace.py <workspace>` to confirm the route uses a cataloged model and supported effort and matches the task document. If you add a model, enter its real callable ID and supported efforts in the catalog first. The original `manifest.yaml` remains a record of the initial route.
 
 These YAML files are a **planning policy**, not an automatic model selector. A coordinator or worker reads the current route when assigning work. Changing YAML alone does not launch a model, move an active chat to another model, or record an ownership claim. See the generated `configuration/OWNERSHIP_PROTOCOL.md` for claim and escalation rules.
+
+### Implement a wave using its model routes
+
+After generating a workspace, use a separate implementation request. For the example, the `foundation` workstream's first wave contains `T-001` routed to `gpt-6-luna`. The `storage` workstream's first wave contains `T-002` routed to `gpt-6-sol` and depends on `T-001`. You can give a coordinator this prompt from the project repository:
+
+```text
+Implement the first wave in each workstream of .demo-workspace, in dependency
+order. Read configuration/model_catalog.yaml, model_policy.yaml,
+task_register.csv, and OWNERSHIP_PROTOCOL.md, then read the wave and task files.
+Start with T-001 using its planned model and effort; after its acceptance and
+dependencies are verified, proceed to T-002 using its own route.
+
+Before each task, check that the routed model is actually available here.
+If you can assign work to that model, record the real worker's claim and update
+the register as the ownership protocol requires. Run each task's validation,
+record actual evidence and completion, and validate the planning workspace.
+If the required model or assignment capability is unavailable, stop before
+claiming that task and report the limitation. Do not mark unperformed work done.
+```
+
+Replace `.demo-workspace` with your generated workspace path. The coordinator needs a way to start workers with the selected models. In a single Codex chat without that capability, select the planned model in your interface and implement one task at a time. There is no WaveForge command that automatically executes a wave or switches models; `build_plan_workspace.py` and `validate_plan_workspace.py` only build and check the plan. Follow the generated ownership protocol when recording actual claims and results.
 
 ## Configuration and format
 
