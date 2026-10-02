@@ -18,6 +18,9 @@ python -m pip install -r requirements.txt
 python -m unittest discover -s scripts -p "test_*.py" -v
 python scripts/build_plan_workspace.py --source examples/source-plan.md --manifest examples/decomposition.yaml --split-config examples/splitting.yaml --out .demo-workspace-release
 python scripts/validate_plan_workspace.py .demo-workspace-release
+python scripts/build_plan_workspace.py --source examples/real-project/source-plan.md --manifest examples/real-project/decomposition.yaml --out .demo-workspace-release-case-study
+python scripts/validate_plan_workspace.py .demo-workspace-release-case-study
+python scripts/validate_plan_workspace.py examples/real-project/workspace
 git diff --check
 git status --short
 ```

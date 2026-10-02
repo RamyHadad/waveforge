@@ -1,0 +1,8 @@
+version: 1
+mode: model_decides
+required_workstreams: []
+min_workstreams: null
+max_workstreams: null
+max_waves_per_workstream: null
+max_tasks_per_wave: null
+rules: []

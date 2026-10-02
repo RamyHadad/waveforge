@@ -1,0 +1,10 @@
+﻿Task ID,Plan,Wave,Title,Status,Dependencies,File Scope,Owner,Actual Model,Updated UTC,Evidence
+VAL-001,validator,states,Require completed dependencies for actionable states,PLANNED,,scripts/validate_plan_workspace.py;scripts/test_workspace_validation.py,,,,
+VAL-002,validator,ledger,Enforce claimant and event chronology invariants,PLANNED,VAL-001,scripts/validate_plan_workspace.py;scripts/test_workspace_validation.py,,,,
+VAL-003,validator,evidence,Check local evidence without breaking notes or links,PLANNED,VAL-002,scripts/validate_plan_workspace.py;scripts/test_workspace_validation.py;scripts/test_plan_workspace.py,,,,
+VAL-004,validator,regressions,Verify all requested invariants and existing fixtures,PLANNED,VAL-001;VAL-002;VAL-003,scripts/test_workspace_validation.py;scripts/test_plan_workspace.py;examples/**,,,,
+DOC-001,documentation,metadata,Correct ownership wording and skill metadata,PLANNED,,agents/openai.yaml;README.md;SKILL.md,,,,
+DOC-002,documentation,contracts,Align ownership and evidence docs with implementation,PLANNED,DOC-001;VAL-003,README.md;SKILL.md;references/**;scripts/build_plan_workspace.py,,,,
+REL-001,delivery,ci,Update official Actions without changing the Python matrix,PLANNED,,.github/workflows/validate.yml,,,,
+REL-002,delivery,preparation,Prepare v0.1.0 notes and release instructions,PLANNED,VAL-004;DOC-002;REL-001,CHANGELOG.md;RELEASING.md;PUBLISHING.md;README.md,,,,
+REL-003,delivery,publication,Publish the reviewed release and verify GitHub operations,PLANNED,REL-002,Git refs/tags/v0.1.0;GitHub release and repository metadata,,,,

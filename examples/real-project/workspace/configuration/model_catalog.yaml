@@ -1,0 +1,11 @@
+version: 1
+models:
+  gpt-6-luna:
+    role: bounded metadata and CI edits
+    supported_efforts:
+    - medium
+  gpt-6-sol:
+    role: validator reasoning, regression review, and release coordination
+    supported_efforts:
+    - medium
+    - high

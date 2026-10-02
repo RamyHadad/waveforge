@@ -1,0 +1,45 @@
+version: 1
+escalation:
+  automatic: false
+  requires:
+  - recorded acceptance failure
+  - diagnosed model-reasoning bottleneck rather than missing data or tools
+  - unchanged task ownership, permissions, and validation gates
+  default_max_consultations_per_task: 1
+tasks:
+  VAL-001:
+    model: gpt-6-sol
+    effort: medium
+    escalation_eligible: false
+  VAL-002:
+    model: gpt-6-sol
+    effort: high
+    escalation_eligible: false
+  VAL-003:
+    model: gpt-6-sol
+    effort: high
+    escalation_eligible: false
+  VAL-004:
+    model: gpt-6-sol
+    effort: high
+    escalation_eligible: false
+  DOC-001:
+    model: gpt-6-luna
+    effort: medium
+    escalation_eligible: false
+  DOC-002:
+    model: gpt-6-sol
+    effort: medium
+    escalation_eligible: false
+  REL-001:
+    model: gpt-6-luna
+    effort: medium
+    escalation_eligible: false
+  REL-002:
+    model: gpt-6-sol
+    effort: medium
+    escalation_eligible: false
+  REL-003:
+    model: gpt-6-sol
+    effort: medium
+    escalation_eligible: false

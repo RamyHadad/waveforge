@@ -1,0 +1,207 @@
+version: 1
+project:
+  id: waveforge-release-case-study
+  title: WaveForge v0.1.0 retrospective planning example
+  assumptions:
+    - This decomposition was authored after the actual release; it is not its historical execution ledger.
+    - Task IDs and model routes are illustrative planning choices, not attribution of original implementation.
+    - Serial validator waves avoid overlapping edits to the same validator file.
+  open_decisions:
+    - Verify the target environment's model IDs and supported efforts before any actual execution.
+models:
+  gpt-6-luna:
+    role: bounded metadata and CI edits
+    supported_efforts: [medium]
+  gpt-6-sol:
+    role: validator reasoning, regression review, and release coordination
+    supported_efforts: [medium, high]
+plans:
+  - id: validator
+    title: Validator correctness
+    goal: Enforce dependency states, worker history, chronology, and local evidence without changing schemas.
+    source_refs: [R01, R03, R04, R05, R06]
+    validation:
+      - All state, ledger, chronology, and evidence regressions pass.
+      - Existing manifest and example workspaces continue to validate.
+    evidence: [Reviewed validator diff, unittest output, validated example workspaces]
+    waves:
+      - id: states
+        title: Dependency-aware states
+        tasks:
+          - id: VAL-001
+            title: Require completed dependencies for actionable states
+            description: Check live dependency statuses for READY, IN_PROGRESS, and DONE while leaving PLANNED valid with unfinished dependencies.
+            source_refs: [R01, R03, R06]
+            dependencies: []
+            acceptance:
+              - Each actionable status fails when any dependency is not DONE.
+              - Errors identify the task, dependency, and current dependency status.
+              - PLANNED and valid ready states preserve compatibility.
+            validation: [Run dependency-state failure and success tests]
+            evidence: [Validator diff and focused test output]
+            file_scope: [scripts/validate_plan_workspace.py, scripts/test_workspace_validation.py]
+            model: gpt-6-sol
+            effort: medium
+            escalation_eligible: false
+      - id: ledger
+        title: Ownership lifecycle
+        tasks:
+          - id: VAL-002
+            title: Enforce claimant and event chronology invariants
+            description: Validate unique active claims, claimant correspondence, terminal completion, per-task UTC chronology, and in-progress actual-model agreement.
+            source_refs: [R01, R03, R04, R06]
+            dependencies: [VAL-001]
+            acceptance:
+              - Invalid task references, duplicate active claims, and mismatched completions fail.
+              - Completion cannot be duplicated or followed by a new event on that task.
+              - Timestamps do not go backwards; equal times remain valid.
+              - Handoffs release ownership and require a new claim before completion.
+            validation: [Run claim, completion, handoff, timestamp, and identity regressions]
+            evidence: [Ledger validation diff and focused test output]
+            file_scope: [scripts/validate_plan_workspace.py, scripts/test_workspace_validation.py]
+            model: gpt-6-sol
+            effort: high
+            escalation_eligible: false
+      - id: evidence
+        title: Evidence references
+        tasks:
+          - id: VAL-003
+            title: Check local evidence without breaking notes or links
+            description: Validate identifiable workspace-relative evidence files, reject escaping paths and invalid entries, and preserve non-file evidence without network calls.
+            source_refs: [R01, R05, R06]
+            dependencies: [VAL-002]
+            acceptance:
+              - Local evidence must exist, be non-empty, and remain inside the workspace after resolving symlinks.
+              - Empty and duplicate evidence entries fail in completion and done records.
+              - Legacy notes and external links remain supported without fetching them.
+            validation: [Run local-file, traversal, symlink, duplicate, note, and URL evidence cases]
+            evidence: [Evidence validation diff and focused test output]
+            file_scope: [scripts/validate_plan_workspace.py, scripts/test_workspace_validation.py, scripts/test_plan_workspace.py]
+            model: gpt-6-sol
+            effort: high
+            escalation_eligible: false
+      - id: regressions
+        title: Complete regression review
+        tasks:
+          - id: VAL-004
+            title: Verify all requested invariants and existing fixtures
+            description: Review coverage of all requested positive and negative cases, run the complete unittest suite, and build and validate the official example.
+            source_refs: [R01, R06, R10]
+            dependencies: [VAL-001, VAL-002, VAL-003]
+            acceptance:
+              - The requested state, ownership, chronology, evidence, and chain cases are covered.
+              - Existing tests remain present and pass.
+              - Official examples validate and source hash verification remains enforced.
+            validation: [Run unittest discovery, Build and validate the official example]
+            evidence: [Complete test output and example validation output]
+            file_scope: [scripts/test_workspace_validation.py, scripts/test_plan_workspace.py, examples/**]
+            model: gpt-6-sol
+            effort: high
+            escalation_eligible: false
+  - id: documentation
+    title: Contracts and documentation
+    goal: Explain the distinction between routes, actual claims, and evidenced completion consistently.
+    source_refs: [R02, R07]
+    validation: [Metadata uses supported fields, Docs match the enforced validator rules]
+    evidence: [Reviewed metadata and documentation diff, stale-reference search results]
+    waves:
+      - id: metadata
+        title: Terminology and interface
+        tasks:
+          - id: DOC-001
+            title: Correct ownership wording and skill metadata
+            description: Replace misleading model ownership wording and provide a useful validated-planning default prompt using the supported metadata schema.
+            source_refs: [R02, R07]
+            dependencies: []
+            acceptance:
+              - Metadata describes dependency-aware plans and planned model routes.
+              - Default prompt invokes the skill and requests a validated workspace.
+              - Configured model routes do not imply ownership in user-facing text.
+            validation: [Validate skill metadata and search affected files for misleading terminology]
+            evidence: [Metadata diff and skill validation output]
+            file_scope: [agents/openai.yaml, README.md, SKILL.md]
+            model: gpt-6-luna
+            effort: medium
+            escalation_eligible: false
+      - id: contracts
+        title: Document enforced contracts
+        tasks:
+          - id: DOC-002
+            title: Align ownership and evidence docs with implementation
+            description: Update references and generated ownership instructions, including supported states, lifecycle behavior, evidence formats, and preserved ambiguities.
+            source_refs: [R01, R04, R05, R07]
+            dependencies: [DOC-001, VAL-003]
+            acceptance:
+              - Documentation describes exact dependency and active-claim requirements.
+              - Handoff semantics and timestamp order are explicit.
+              - Evidence path checks and limits of note or URL validation are explicit.
+              - Generated workspace indexes distinguish worker ownership from model routing.
+            validation: [Review docs against validator branches, Build a workspace and inspect its ownership protocol]
+            evidence: [Documentation diff and reviewed generated protocol]
+            file_scope: [README.md, SKILL.md, references/**, scripts/build_plan_workspace.py]
+            model: gpt-6-sol
+            effort: medium
+            escalation_eligible: false
+  - id: delivery
+    title: Release delivery
+    goal: Prepare a reviewable release and publish only after validation and permission checks.
+    source_refs: [R08, R09, R10]
+    validation: [Both Python CI jobs pass, Tag and release point to the reviewed commit]
+    evidence: [CI run, annotated tag target, published release, verified repository metadata]
+    waves:
+      - id: ci
+        title: CI maintenance
+        tasks:
+          - id: REL-001
+            title: Update official Actions without changing the Python matrix
+            description: Verify supported stable Actions majors and keep complete tests and example checks on Python 3.10 and 3.14.
+            source_refs: [R09]
+            dependencies: []
+            acceptance:
+              - Official Actions versions are verified against their published releases.
+              - Both existing Python matrix versions remain configured.
+              - Complete unittest discovery and example build/validation remain in CI.
+            validation: [Review workflow syntax and upstream release notes, Run workflow-equivalent commands locally]
+            evidence: [Workflow diff and official Action release links]
+            file_scope: [.github/workflows/validate.yml]
+            model: gpt-6-luna
+            effort: medium
+            escalation_eligible: false
+      - id: preparation
+        title: Release notes and final checks
+        tasks:
+          - id: REL-002
+            title: Prepare v0.1.0 notes and release instructions
+            description: Replace first-upload guidance, record actual capabilities and compatibility, and finish the review and validation gates.
+            source_refs: [R01, R08, R10]
+            dependencies: [VAL-004, DOC-002, REL-001]
+            acceptance:
+              - Changelog identifies 0.1.0 and the requested release date without invented features.
+              - Release guide covers checks, tags, notes, compatibility, and future releases.
+              - No unnecessary package versioning or schema redesign is introduced.
+              - Diff and documentation checks pass and publication remains explicitly gated.
+            validation: [Run final test and example checks, Check links and stale references, Review the release diff]
+            evidence: [Release notes, release guide, final check output]
+            file_scope: [CHANGELOG.md, RELEASING.md, PUBLISHING.md, README.md]
+            model: gpt-6-sol
+            effort: medium
+            escalation_eligible: false
+      - id: publication
+        title: Authorized publication
+        tasks:
+          - id: REL-003
+            title: Publish the reviewed release and verify GitHub operations
+            description: After checks and CI pass, use authorized GitHub access to publish the annotated tag and release and update metadata; report exact fallback commands when access is unavailable.
+            source_refs: [R10]
+            dependencies: [REL-002]
+            acceptance:
+              - Publication occurs only after validation passes and authenticated permissions are available.
+              - Annotated v0.1.0 tag and release reference the reviewed commit.
+              - Description and relevant topics are verified after update.
+              - Only actually performed operations are reported as completed.
+            validation: [Verify tag type and remote target, Check release and repository metadata through GitHub, Verify both CI jobs]
+            evidence: [Public release link, commit and tag target, CI job results, metadata response]
+            file_scope: [Git refs/tags/v0.1.0, GitHub release and repository metadata]
+            model: gpt-6-sol
+            effort: medium
+            escalation_eligible: false

@@ -27,3 +27,9 @@ jobs:
         run: python scripts/build_plan_workspace.py --source examples/source-plan.md --manifest examples/decomposition.yaml --split-config examples/splitting.yaml --out .demo-workspace
       - name: Validate example
         run: python scripts/validate_plan_workspace.py .demo-workspace
+      - name: Build real-project case study
+        run: python scripts/build_plan_workspace.py --source examples/real-project/source-plan.md --manifest examples/real-project/decomposition.yaml --out .demo-workspace-real-project
+      - name: Validate rebuilt case study
+        run: python scripts/validate_plan_workspace.py .demo-workspace-real-project
+      - name: Validate checked-in case study
+        run: python scripts/validate_plan_workspace.py examples/real-project/workspace

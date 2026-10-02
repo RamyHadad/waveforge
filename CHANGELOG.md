@@ -3,6 +3,15 @@
 Notable changes to WaveForge are recorded here. Release versions follow
 semantic version naming; workspace YAML schema versions are separate.
 
+## [Unreleased]
+
+### Added
+
+- A redacted retrospective case study of the real v0.1.0 release request,
+  including three workstreams, nine tasks, editable model routes, a generated
+  workspace, and links to actual implementation/CI/release outcomes.
+- CI build and validation of the case-study manifest and checked-in workspace.
+
 ## [0.1.0] - 2026-10-02
 
 ### Added

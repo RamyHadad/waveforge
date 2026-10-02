@@ -1,0 +1,18 @@
+version: 1
+id: waveforge-release-case-study
+title: WaveForge v0.1.0 retrospective planning example
+generated_utc: '2026-10-02T20:38:27.214258+00:00'
+source_name: source-plan.md
+source_sha256: 100727e59db8aa29276fe0a4cf7a9bf85a474aec879c294ed8bcd0aede5f41dc
+assumptions:
+- This decomposition was authored after the actual release; it is not its historical
+  execution ledger.
+- Task IDs and model routes are illustrative planning choices, not attribution of
+  original implementation.
+- Serial validator waves avoid overlapping edits to the same validator file.
+open_decisions:
+- Verify the target environment's model IDs and supported efforts before any actual
+  execution.
+planning_provenance:
+  source_plan_model: unknown
+  first_decomposition_model: unknown

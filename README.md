@@ -111,6 +111,14 @@ The example models are available in the environment used to author this example.
 
 The demo contains two workstreams and three tasks: define a note format with `gpt-6-luna` at medium effort, save a note with `gpt-6-sol` at medium effort, then reopen it with `gpt-6-sol` at high effort. The high route illustrates a manual intensity choice. These IDs were available when the example was written; check your own environment before using the routes. The builder requires a **new output directory**. Choose a different `--out` path for another run.
 
+### Inspect a real-project case study
+
+The [WaveForge v0.1.0 case study](examples/real-project/README.md) includes a redacted release-preparation request, three workstreams, nine bounded tasks, model/effort routes, and a checked-in generated workspace. It links to the actual implementation, CI, and release. The decomposition was created retrospectively; its unsigned ledger and planned task states are not historical execution records.
+
+```text
+python scripts/validate_plan_workspace.py examples/real-project/workspace
+```
+
 ## Generated workspace
 
 ```text
@@ -224,6 +232,7 @@ Replace `.demo-workspace` with your generated workspace path. The coordinator ne
 - [Complete skill instructions](SKILL.md)
 - [Example source plan](examples/source-plan.md)
 - [Example decomposition](examples/decomposition.yaml)
+- [Real-project case study](examples/real-project/README.md)
 
 Without a splitting file, the skill chooses coherent workstreams from the plan. Optional rules can require workstreams, set numeric limits, and describe semantic boundaries. The scripts check numeric limits and required IDs; a model or reviewer checks whether the human-readable rules and source requirements are satisfied.
 
@@ -241,7 +250,7 @@ Run the complete test suite:
 python -m unittest discover -s scripts -p "test_*.py" -v
 ```
 
-GitHub Actions runs those tests and builds and validates the example on Python 3.10 and 3.14.
+GitHub Actions runs those tests, builds and validates both examples, and validates the checked-in case-study workspace on Python 3.10 and 3.14.
 
 Contributions should describe the concrete problem, preserve the skill's planning boundary, and include relevant validation. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
