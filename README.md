@@ -159,4 +159,4 @@ See [PUBLISHING.md](PUBLISHING.md) for the first upload to `RamyHadad/waveforge`
 
 ## License
 
-A license has not been selected yet. Add a license before inviting reuse or redistribution under open-source terms.
+Licensed under the [MIT License](LICENSE). Copyright (c) 2026 Ramy Haddad.

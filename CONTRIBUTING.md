@@ -14,4 +14,4 @@ python scripts/validate_plan_workspace.py .demo-workspace-contribution
 
 Use a fresh output path each time. Add focused behavior tests when a script change warrants them. For documentation changes, check commands, relative links, and consistency with the existing skill and scripts.
 
-This repository has not yet selected a license; resolve licensing with the maintainer before contributing code intended for redistribution.
+WaveForge is licensed under the [MIT License](LICENSE). Submit contributions you have the right to share under those terms.

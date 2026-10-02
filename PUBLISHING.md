@@ -12,7 +12,7 @@ Sign in to GitHub as `RamyHadad`, then [create a new repository](https://github.
 - Visibility: choose public for a community-facing skill, or private for restricted access.
 - Leave GitHub's README, .gitignore, and license initialization unchecked because the local files will be uploaded.
 
-Select a license separately when you are ready to grant reuse rights.
+This project uses the MIT license in `LICENSE`; preserve it when publishing.
 
 ## 2. Upload from PowerShell
 
@@ -39,6 +39,6 @@ Check the Actions tab for the `Validate WaveForge` workflow. Its test and exampl
 
 ## 4. Create a first release
 
-Once validation passes and licensing is resolved, use GitHub's Releases interface to create a release such as `v0.1.0`. Describe the planning workflow, the supported Python versions, and the install and example commands. GitHub provides source archives for tagged releases.
+Once validation passes, use GitHub's Releases interface to create a release such as `v0.1.0`. Describe the planning workflow, the supported Python versions, and the install and example commands. GitHub provides source archives for tagged releases.
 
 Future updates can be published with `git add`, `git commit`, and `git push`. Avoid committing generated workspaces containing private project plans or live ownership records.
