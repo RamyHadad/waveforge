@@ -187,7 +187,17 @@ These YAML files are a **planning policy**, not an automatic model selector. A c
 
 ### Implement a wave using its model routes
 
-After generating a workspace, use a separate implementation request. For the example, the `foundation` workstream's first wave contains `T-001` routed to `gpt-6-luna` at medium effort. The `storage` workstream's first wave contains `T-002` routed to `gpt-6-sol` at medium effort and depends on `T-001`; its second wave routes `T-003` to `gpt-6-sol` at high effort. You can give a coordinator this prompt from the project repository:
+After generating a workspace and saving its routes, give the coordinator this implementation prompt:
+
+```text
+Implement Wave 3 using the saved model routing policy. Dispatch each ready
+task to a worker with its configured model and reasoning effort, following
+the task protocol and dependencies.
+```
+
+Replace `Wave 3` with the wave you want to implement. If several workstreams use the same wave name, specify the workstream and workspace path. The coordinator reads the saved policy and dispatches each ready task with its own model and effort; this applies equally to manually selected routes and routes chosen by the planning agent. Tasks with unmet dependencies wait until those dependencies are completed. Worker dispatch must be available in the execution environment and support the configured models and efforts. Follow the generated ownership protocol to record actual workers, validation, and completion evidence.
+
+For the included example, the `foundation` workstream's first wave contains `T-001` routed to `gpt-6-luna` at medium effort. The `storage` workstream's first wave contains `T-002` routed to `gpt-6-sol` at medium effort and depends on `T-001`; its second wave routes `T-003` to `gpt-6-sol` at high effort. A more explicit prompt for that example is:
 
 ```text
 Implement the first wave in each workstream of .demo-workspace, in dependency
